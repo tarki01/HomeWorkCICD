@@ -1,4 +1,4 @@
-name: Cross-Platform Java CI
+name: HomeWork
 
 on:
   push:
