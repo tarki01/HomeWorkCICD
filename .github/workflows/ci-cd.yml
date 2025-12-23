@@ -1,4 +1,4 @@
-name: Simple Java CI
+name: Cross-Platform Java CI
 
 on:
   push:
@@ -25,7 +25,10 @@ jobs:
   
   test:
     name: Run Unit Tests
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     needs: compile
     
     steps:
@@ -43,5 +46,5 @@ jobs:
     - name: Test summary
       if: always()
       run: |
-        echo "Tests completed!"
+        echo "Tests completed on ${{ runner.os }}!"
         echo "See target/surefire-reports/ for detailed results"
