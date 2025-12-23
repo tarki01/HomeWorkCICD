@@ -67,8 +67,8 @@ jobs:
         username: ${{ secrets.SSH_USERNAME }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: ${{ 22 }}
-        source: "pom.xml"
-        target: "/Project"  # Укажите целевой путь на сервере
+        source: "."
+        target: "~/Project"  # Укажите целевой путь на сервере
         strip_components: 0
         overwrite: true
         
