@@ -105,7 +105,7 @@ jobs:
           mvn clean install -DskipTests
           
           echo "Compiling project..."
-          javac /src/main/java/com/example/*.java -d target/classes
+          javac ~/Project/src/main/java/com/example/*.java -d target/classes
 
           echo "Deployment completed successfully!"
           echo "Files are available at: $(pwd)"
