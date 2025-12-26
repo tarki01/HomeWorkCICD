@@ -48,4 +48,65 @@ jobs:
       run: |
         echo "Tests completed on ${{ runner.os }}!"
         echo "See target/surefire-reports/ for detailed results"
+  deploy:
+    name: Deploy Files to Server
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Получаем всю историю коммитов
+        
+    - name: Deploy files via SSH
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: ${{ 22 }}
+        source: "."
+        target: "~/Project"  # Укажите целевой путь на сервере
+        strip_components: 0
+        overwrite: true
+        
+    - name: Install dependencies on server
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: ${{ secrets.SSH_PORT || 22 }}
+        script: |
+          echo "Deploying application to $(pwd)..."
+          cd /Project  # Укажите целевой путь на сервере
+          
+          echo "Checking Java installation..."
+          if ! command -v java &> /dev/null; then
+            echo "Java is not installed. Installing..."
+            sudo apt-get update
+            sudo apt-get install -y openjdk-21-jdk
+          else
+            echo "Java is already installed:"
+            java -version
+          fi
+          
+          echo "Checking Maven installation..."
+          if ! command -v mvn &> /dev/null; then
+            echo "Maven is not installed. Installing..."
+            sudo apt-get install -y maven
+          else
+            echo "Maven is already installed:"
+            mvn --version
+          fi
+          
+          echo "Installing project dependencies..."
+          mvn clean install -DskipTests
+          
+          echo "Compiling project..."
+          javac /src/main/java/com/example/*.java -d target/classes
 
+          echo "Deployment completed successfully!"
+          echo "Files are available at: $(pwd)"
+          ls -la
